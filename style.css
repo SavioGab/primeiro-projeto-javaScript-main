@@ -1,0 +1,257 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #faf7f2;
+    color: #2b2b2b;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* REMOVE O BANNER */
+.banner {
+    display: none;
+}
+
+/* TOPO */
+header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 20px 40px;
+}
+
+.carrinho {
+    width: 38px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.carrinho:hover {
+    transform: scale(1.08);
+}
+
+/* CABEÇALHO */
+.header {
+    text-align: center;
+    padding: 50px 20px 25px;
+}
+
+h1 {
+    margin: 0;
+    color: #3b2a20;
+    font-size: 42px;
+    font-weight: 700;
+}
+
+.header p {
+    color: #7a6a5f;
+    font-size: 18px;
+    margin-top: 8px;
+}
+
+/* CARDS */
+.conteiner {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 30px 20px 50px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.card {
+    width: 235px;
+    background-color: #ffffff;
+    padding: 14px;
+    text-align: center;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    transition: 0.25s ease;
+    border: 1px solid #eee4da;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.12);
+}
+
+.card img {
+    width: 100%;
+    height: 155px;
+    object-fit: cover;
+    border-radius: 14px;
+}
+
+.card p {
+    margin: 8px 0;
+}
+
+.card p:first-of-type {
+    font-size: 18px;
+    font-weight: bold;
+    color: #3b2a20;
+}
+
+.card p:nth-of-type(2) {
+    color: #7a6a5f;
+    font-size: 15px;
+}
+
+.card p:nth-of-type(3) {
+    color: #1f7a3a;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* BOTÕES */
+button {
+    background-color: #2f8f46;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    font-size: 17px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+button:hover {
+    background-color: #26773a;
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+/* SOBRE */
+.about {
+    text-align: center;
+    padding: 45px 20px;
+    background-color: #ffffff;
+    border-top: 1px solid #eee4da;
+}
+
+.about h2 {
+    color: #3b2a20;
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.about p {
+    max-width: 650px;
+    margin: 0 auto 25px;
+    font-size: 18px;
+    color: #6f6259;
+}
+
+/* WHATSAPP */
+.whatsapp {
+    font-size: 42px;
+    color: #25D366;
+    transition: 0.2s;
+}
+
+.whatsapp:hover {
+    color: #1ebe5d;
+    transform: scale(1.12);
+}
+
+/* PÁGINA DO CARRINHO */
+#lista-carrinho {
+    background-color: #ffffff;
+    border-radius: 18px;
+    padding: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    list-style: none;
+    width: min(900px, 90%);
+    margin: 30px auto;
+    border: 1px solid #eee4da;
+}
+
+#lista-carrinho li {
+    padding: 16px;
+    border-bottom: 1px solid #eee4da;
+    font-size: 18px;
+}
+
+#lista-carrinho li:last-child {
+    border-bottom: none;
+}
+
+.item-carrinho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.item-carrinho button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    background-color: #d94b4b;
+    font-size: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.item-carrinho button:hover {
+    background-color: #bf3838;
+}
+
+#total {
+    width: min(900px, 90%);
+    margin: 20px auto;
+    color: #2b2b2b;
+    font-size: 30px;
+    text-align: right;
+}
+
+.finalizar {
+    display: block;
+    width: min(320px, 90%);
+    height: 60px;
+    margin: 25px auto 50px;
+    font-size: 20px;
+    border-radius: 999px;
+    background-color: #2f8f46;
+}
+
+/* RESPONSIVO */
+@media (max-width: 600px) {
+    header {
+        padding: 15px 20px;
+    }
+
+    h1 {
+        font-size: 32px;
+    }
+
+    .header {
+        padding: 35px 15px 20px;
+    }
+
+    .card {
+        width: 90%;
+        max-width: 320px;
+    }
+
+    #total {
+        text-align: center;
+        font-size: 26px;
+    }
+
+    .item-carrinho {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
