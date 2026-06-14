@@ -1,5 +1,10 @@
 const API_URL = "http://127.0.0.1:5000";
 
+const SUPABASE_URL = "https://xexwzlgvcdmvdfuzvnut.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhleHd6bGd2Y2RtdmRmdXp2bnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MzU4NjEsImV4cCI6MjA5NDExMTg2MX0.2plyVzUf2nT2lzjDp82HAGjeqBWvatE_3gzcFthlG4I";
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -8,12 +13,20 @@ document.addEventListener("DOMContentLoaded", function () {
     carregarProdutos();
     atualizarCarrinho();
 
-    const botaoFinalizar = document.querySelector(".finalizar");
+    configurarUsuario();
+    abrirLoginPorParametro();
+    atualizarTextoUsuario();
+
+    const botaoFinalizar = document.getElementById("finalizarCompra") || document.querySelector(".finalizar");
 
     if (botaoFinalizar) {
         botaoFinalizar.addEventListener("click", finalizarCompra);
     }
 });
+
+/* =========================
+   PRODUTOS
+========================= */
 
 async function carregarProdutos() {
     const container = document.querySelector(".conteiner") || document.querySelector(".container");
@@ -71,6 +84,10 @@ async function carregarProdutos() {
     }
 }
 
+/* =========================
+   CARRINHO
+========================= */
+
 function adicionarProduto(primeiro, segundo, terceiro) {
     let produto;
 
@@ -108,7 +125,7 @@ function adicionarProduto(primeiro, segundo, terceiro) {
 
     console.log("Carrinho:", carrinho);
 
-    mostrarMensagem("Produto adicionado!", `${produto.nome} foi adicionado ao carrinho.`);
+    mostrarMensagem("Produto adicionado!", `${produto.nome} foi adicionado ao carrinho.`, "success");
 }
 
 function atualizarCarrinho() {
@@ -159,6 +176,10 @@ function atualizarCarrinho() {
 }
 
 function removerProduto(index) {
+    if (!carrinho[index]) {
+        return;
+    }
+
     if (carrinho[index].quantidade > 1) {
         carrinho[index].quantidade -= 1;
     } else {
@@ -169,21 +190,314 @@ function removerProduto(index) {
     atualizarCarrinho();
 }
 
-function finalizarCompra() {
+function salvarCarrinho() {
+    localStorage.setItem("carrinho", JSON.stringify(carrinho));
+}
+
+/* =========================
+   FINALIZAR COMPRA
+========================= */
+
+async function finalizarCompra() {
     if (carrinho.length === 0) {
         mostrarMensagem("Carrinho vazio", "Adicione algum produto antes de finalizar.", "warning");
         return;
     }
 
-    mostrarMensagem("Compra finalizada!", "Por enquanto, o carrinho foi salvo apenas no navegador.");
+    const { data, error } = await supabaseClient.auth.getSession();
+
+    if (error) {
+        mostrarMensagem("Erro", error.message, "error");
+        return;
+    }
+
+    const session = data.session;
+
+    if (!session) {
+        mostrarMensagem("Login necessário", "Você precisa fazer login para finalizar a compra.", "warning")
+            .then(function () {
+                window.location.href = "index.html?login=true";
+            });
+
+        return;
+    }
 
     carrinho = [];
     salvarCarrinho();
+    localStorage.removeItem("carrinho");
     atualizarCarrinho();
+
+    mostrarMensagem("Compra finalizada!", "Compra finalizada com sucesso!", "success")
+        .then(function () {
+            window.location.href = "index.html";
+        });
 }
 
-function salvarCarrinho() {
-    localStorage.setItem("carrinho", JSON.stringify(carrinho));
+/* =========================
+   USUÁRIO / SUPABASE AUTH
+========================= */
+
+function configurarUsuario() {
+    const btnUsuario = document.getElementById("btnUsuario");
+
+    const loginModal = document.getElementById("loginModal");
+    const cadastroModal = document.getElementById("cadastroModal");
+    const contaModal = document.getElementById("contaModal");
+
+    const fecharLogin = document.getElementById("fecharLogin");
+    const fecharCadastro = document.getElementById("fecharCadastro");
+    const fecharConta = document.getElementById("fecharConta");
+
+    const abrirCadastro = document.getElementById("abrirCadastro");
+
+    const botaoCadastrar = document.getElementById("cadastrar");
+    const botaoEntrar = document.getElementById("entrar");
+    const btnSairConta = document.getElementById("btnSairConta");
+
+    const nomeConta = document.getElementById("nomeConta");
+    const telefoneConta = document.getElementById("telefoneConta");
+    const enderecoConta = document.getElementById("enderecoConta");
+
+    if (btnUsuario) {
+        btnUsuario.addEventListener("click", async function () {
+            const { data, error } = await supabaseClient.auth.getSession();
+
+            if (error) {
+                mostrarMensagem("Erro", error.message, "error");
+                return;
+            }
+
+            const session = data.session;
+
+            if (session) {
+                const usuario = session.user;
+
+                if (nomeConta) {
+                    nomeConta.textContent = usuario.user_metadata?.nome || "Usuário";
+                }
+
+                if (telefoneConta) {
+                    telefoneConta.textContent = usuario.phone || "Não informado";
+                }
+
+                if (enderecoConta) {
+                    enderecoConta.textContent = usuario.user_metadata?.endereco || "Não informado";
+                }
+
+                if (contaModal) {
+                    contaModal.style.display = "flex";
+                }
+
+            } else {
+                if (loginModal) {
+                    loginModal.style.display = "flex";
+                }
+            }
+        });
+    }
+
+    if (fecharLogin) {
+        fecharLogin.addEventListener("click", function () {
+            if (loginModal) {
+                loginModal.style.display = "none";
+            }
+        });
+    }
+
+    if (abrirCadastro) {
+        abrirCadastro.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            if (loginModal) {
+                loginModal.style.display = "none";
+            }
+
+            if (cadastroModal) {
+                cadastroModal.style.display = "flex";
+            }
+        });
+    }
+
+    if (fecharCadastro) {
+        fecharCadastro.addEventListener("click", function () {
+            if (cadastroModal) {
+                cadastroModal.style.display = "none";
+            }
+
+            if (loginModal) {
+                loginModal.style.display = "flex";
+            }
+        });
+    }
+
+    if (fecharConta) {
+        fecharConta.addEventListener("click", function () {
+            if (contaModal) {
+                contaModal.style.display = "none";
+            }
+        });
+    }
+
+    if (botaoCadastrar) {
+        botaoCadastrar.addEventListener("click", async function () {
+            const nome = pegarValor("nomeCadastro");
+            const telefoneDigitado = pegarValor("telefoneCadastro");
+            const endereco = pegarValor("enderecoCadastro");
+            const senha = pegarValor("senhaCadastro");
+
+            if (nome === "" || telefoneDigitado === "" || endereco === "" || senha === "") {
+                mostrarMensagem("Campos vazios", "Preencha todos os campos!", "warning");
+                return;
+            }
+
+            const telefone = formatarTelefoneSupabase(telefoneDigitado);
+
+            const { data, error } = await supabaseClient.auth.signUp({
+                phone: telefone,
+                password: senha,
+                options: {
+                    data: {
+                        nome: nome,
+                        endereco: endereco
+                    }
+                }
+            });
+
+            if (error) {
+                mostrarMensagem("Erro no cadastro", traduzirErroSupabase(error.message), "error");
+                return;
+            }
+
+            console.log("Cadastro:", data);
+
+            mostrarMensagem("Conta criada!", "Cadastro realizado com sucesso.", "success");
+
+            if (cadastroModal) {
+                cadastroModal.style.display = "none";
+            }
+
+            if (loginModal) {
+                loginModal.style.display = "flex";
+            }
+        });
+    }
+
+    if (botaoEntrar) {
+        botaoEntrar.addEventListener("click", async function () {
+            const telefoneDigitado = pegarValor("telefoneLogin");
+            const senha = pegarValor("senhaLogin");
+
+            if (telefoneDigitado === "" || senha === "") {
+                mostrarMensagem("Campos vazios", "Digite seu telefone e sua senha.", "warning");
+                return;
+            }
+
+            const telefone = formatarTelefoneSupabase(telefoneDigitado);
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                phone: telefone,
+                password: senha
+            });
+
+            if (error) {
+                mostrarMensagem("Erro no login", traduzirErroSupabase(error.message), "error");
+                return;
+            }
+
+            console.log("Login:", data);
+
+            await atualizarTextoUsuario();
+
+            mostrarMensagem("Login realizado!", "Você entrou na sua conta.", "success");
+
+            if (loginModal) {
+                loginModal.style.display = "none";
+            }
+        });
+    }
+
+    if (btnSairConta) {
+        btnSairConta.addEventListener("click", async function () {
+            const { error } = await supabaseClient.auth.signOut();
+
+            if (error) {
+                mostrarMensagem("Erro ao sair", traduzirErroSupabase(error.message), "error");
+                return;
+            }
+
+            await atualizarTextoUsuario();
+
+            if (contaModal) {
+                contaModal.style.display = "none";
+            }
+
+            mostrarMensagem("Você saiu", "Logout realizado com sucesso.", "success");
+        });
+    }
+
+    supabaseClient.auth.onAuthStateChange(function () {
+        atualizarTextoUsuario();
+    });
+}
+
+function abrirLoginPorParametro() {
+    const parametros = new URLSearchParams(window.location.search);
+    const loginModal = document.getElementById("loginModal");
+
+    if (parametros.get("login") === "true" && loginModal) {
+        loginModal.style.display = "flex";
+    }
+}
+
+async function atualizarTextoUsuario() {
+    const textoUsuario = document.getElementById("textoUsuario");
+
+    if (!textoUsuario) {
+        return;
+    }
+
+    const { data, error } = await supabaseClient.auth.getSession();
+
+    if (error) {
+        textoUsuario.innerHTML = '<i class="fa-regular fa-user"></i>';
+        return;
+    }
+
+    const session = data.session;
+
+    if (session) {
+        const usuario = session.user;
+        const nome = usuario.user_metadata?.nome || usuario.phone || "Usuário";
+        const primeiroNome = nome.split(" ")[0];
+
+        textoUsuario.textContent = "Olá, " + primeiroNome;
+    } else {
+        textoUsuario.innerHTML = '<i class="fa-regular fa-user"></i>';
+    }
+}
+
+/* =========================
+   UTILIDADES
+========================= */
+
+function pegarValor(id) {
+    const elemento = document.getElementById(id);
+
+    if (!elemento) {
+        return "";
+    }
+
+    return elemento.value.trim();
+}
+
+function formatarTelefoneSupabase(telefone) {
+    let numeros = telefone.replace(/\D/g, "");
+
+    if (numeros.startsWith("55")) {
+        return "+" + numeros;
+    }
+
+    return "+55" + numeros;
 }
 
 function formatarPreco(valor) {
@@ -192,10 +506,43 @@ function formatarPreco(valor) {
 
 function mostrarMensagem(titulo, texto, tipo = "success") {
     if (typeof Swal !== "undefined") {
-        Swal.fire(titulo, texto, tipo);
+        return Swal.fire(titulo, texto, tipo);
     } else {
         alert(texto || titulo);
+        return Promise.resolve();
     }
+}
+
+function traduzirErroSupabase(mensagem) {
+    if (!mensagem) {
+        return "Ocorreu um erro.";
+    }
+
+    if (mensagem.includes("Invalid login credentials")) {
+        return "Telefone ou senha incorretos.";
+    }
+
+    if (mensagem.includes("Phone not confirmed")) {
+        return "Confirme seu telefone antes de entrar.";
+    }
+
+    if (mensagem.includes("User already registered")) {
+        return "Esse telefone já está cadastrado.";
+    }
+
+    if (mensagem.includes("Signup requires a valid phone number")) {
+        return "Digite um telefone válido.";
+    }
+
+    if (mensagem.includes("Phone signups are disabled")) {
+        return "O cadastro por telefone está desativado no Supabase.";
+    }
+
+    if (mensagem.includes("Password should be at least")) {
+        return "A senha precisa ter pelo menos 6 caracteres.";
+    }
+
+    return mensagem;
 }
 
 window.adicionarProduto = adicionarProduto;
