@@ -255,6 +255,7 @@ function configurarUsuario() {
     const btnSairConta = document.getElementById("btnSairConta");
 
     const nomeConta = document.getElementById("nomeConta");
+    const emailConta = document.getElementById("emailConta");
     const telefoneConta = document.getElementById("telefoneConta");
     const enderecoConta = document.getElementById("enderecoConta");
 
@@ -276,8 +277,12 @@ function configurarUsuario() {
                     nomeConta.textContent = usuario.user_metadata?.nome || "Usuário";
                 }
 
+                if (emailConta) {
+                    emailConta.textContent = usuario.email || "Não informado";
+                }
+
                 if (telefoneConta) {
-                    telefoneConta.textContent = usuario.phone || "Não informado";
+                    telefoneConta.textContent = usuario.user_metadata?.telefone || "Não informado";
                 }
 
                 if (enderecoConta) {
@@ -341,23 +346,33 @@ function configurarUsuario() {
     if (botaoCadastrar) {
         botaoCadastrar.addEventListener("click", async function () {
             const nome = pegarValor("nomeCadastro");
-            const telefoneDigitado = pegarValor("telefoneCadastro");
+            const email = pegarValor("emailCadastro");
+            const telefone = pegarValor("telefoneCadastro");
             const endereco = pegarValor("enderecoCadastro");
             const senha = pegarValor("senhaCadastro");
 
-            if (nome === "" || telefoneDigitado === "" || endereco === "" || senha === "") {
+            if (nome === "" || email === "" || telefone === "" || endereco === "" || senha === "") {
                 mostrarMensagem("Campos vazios", "Preencha todos os campos!", "warning");
                 return;
             }
 
-            const telefone = formatarTelefoneSupabase(telefoneDigitado);
+            if (!validarEmail(email)) {
+                mostrarMensagem("E-mail inválido", "Digite um e-mail válido.", "warning");
+                return;
+            }
+
+            if (!validarTelefone(telefone)) {
+                mostrarMensagem("Telefone inválido", "Digite um telefone válido com DDD.", "warning");
+                return;
+            }
 
             const { data, error } = await supabaseClient.auth.signUp({
-                phone: telefone,
+                email: email,
                 password: senha,
                 options: {
                     data: {
                         nome: nome,
+                        telefone: telefone,
                         endereco: endereco
                     }
                 }
@@ -370,7 +385,13 @@ function configurarUsuario() {
 
             console.log("Cadastro:", data);
 
-            mostrarMensagem("Conta criada!", "Cadastro realizado com sucesso.", "success");
+            limparCamposCadastro();
+
+            mostrarMensagem(
+                "Conta criada!",
+                "Cadastro realizado com sucesso. Se o Supabase pedir confirmação, verifique seu e-mail.",
+                "success"
+            );
 
             if (cadastroModal) {
                 cadastroModal.style.display = "none";
@@ -384,18 +405,16 @@ function configurarUsuario() {
 
     if (botaoEntrar) {
         botaoEntrar.addEventListener("click", async function () {
-            const telefoneDigitado = pegarValor("telefoneLogin");
+            const email = pegarValor("emailLogin");
             const senha = pegarValor("senhaLogin");
 
-            if (telefoneDigitado === "" || senha === "") {
-                mostrarMensagem("Campos vazios", "Digite seu telefone e sua senha.", "warning");
+            if (email === "" || senha === "") {
+                mostrarMensagem("Campos vazios", "Digite seu e-mail e sua senha.", "warning");
                 return;
             }
 
-            const telefone = formatarTelefoneSupabase(telefoneDigitado);
-
             const { data, error } = await supabaseClient.auth.signInWithPassword({
-                phone: telefone,
+                email: email,
                 password: senha
             });
 
@@ -405,6 +424,8 @@ function configurarUsuario() {
             }
 
             console.log("Login:", data);
+
+            limparCamposLogin();
 
             await atualizarTextoUsuario();
 
@@ -467,7 +488,7 @@ async function atualizarTextoUsuario() {
 
     if (session) {
         const usuario = session.user;
-        const nome = usuario.user_metadata?.nome || usuario.phone || "Usuário";
+        const nome = usuario.user_metadata?.nome || usuario.email || "Usuário";
         const primeiroNome = nome.split(" ")[0];
 
         textoUsuario.textContent = "Olá, " + primeiroNome;
@@ -490,14 +511,35 @@ function pegarValor(id) {
     return elemento.value.trim();
 }
 
-function formatarTelefoneSupabase(telefone) {
-    let numeros = telefone.replace(/\D/g, "");
+function limparCampo(id) {
+    const elemento = document.getElementById(id);
 
-    if (numeros.startsWith("55")) {
-        return "+" + numeros;
+    if (elemento) {
+        elemento.value = "";
     }
+}
 
-    return "+55" + numeros;
+function limparCamposCadastro() {
+    limparCampo("nomeCadastro");
+    limparCampo("emailCadastro");
+    limparCampo("telefoneCadastro");
+    limparCampo("enderecoCadastro");
+    limparCampo("senhaCadastro");
+}
+
+function limparCamposLogin() {
+    limparCampo("emailLogin");
+    limparCampo("senhaLogin");
+}
+
+function validarEmail(email) {
+    return email.includes("@") && email.includes(".");
+}
+
+function validarTelefone(telefone) {
+    const numeros = telefone.replace(/\D/g, "");
+
+    return numeros.length >= 10 && numeros.length <= 11;
 }
 
 function formatarPreco(valor) {
@@ -519,23 +561,23 @@ function traduzirErroSupabase(mensagem) {
     }
 
     if (mensagem.includes("Invalid login credentials")) {
-        return "Telefone ou senha incorretos.";
+        return "E-mail ou senha incorretos.";
     }
 
-    if (mensagem.includes("Phone not confirmed")) {
-        return "Confirme seu telefone antes de entrar.";
+    if (mensagem.includes("Email not confirmed")) {
+        return "Confirme seu e-mail antes de entrar.";
     }
 
     if (mensagem.includes("User already registered")) {
-        return "Esse telefone já está cadastrado.";
+        return "Esse e-mail já está cadastrado.";
     }
 
-    if (mensagem.includes("Signup requires a valid phone number")) {
-        return "Digite um telefone válido.";
+    if (mensagem.includes("Signup requires a valid email")) {
+        return "Digite um e-mail válido.";
     }
 
-    if (mensagem.includes("Phone signups are disabled")) {
-        return "O cadastro por telefone está desativado no Supabase.";
+    if (mensagem.includes("Unable to validate email address")) {
+        return "Digite um e-mail válido.";
     }
 
     if (mensagem.includes("Password should be at least")) {
