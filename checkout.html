@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+
+    <header class="checkout-header">
+        <a href="carrinho.html" class="voltar">
+            <i class="fa-solid fa-arrow-left"></i>
+            Voltar
+        </a>
+    </header>
+
+    <main class="checkout-container">
+        <section class="checkout-card">
+
+            <h1>Finalizar Compra</h1>
+            <p class="subtitulo">Escolha a forma de pagamento</p>
+
+            <div class="form-pagamento">
+
+                <button type="button" class="opcao-pagamento" id="abrirModalPix">
+                    <div class="conteudo-opcao">
+                        <i class="fa-brands fa-pix"></i>
+
+                        <div>
+                            <h2>Pix</h2>
+                            <p>Pagamento rápido e prático.</p>
+                        </div>
+                    </div>
+                </button>
+
+                <button type="button" class="opcao-pagamento" id="abrirModalCartao">
+                    <div class="conteudo-opcao">
+                        <i class="fa-regular fa-credit-card"></i>
+
+                        <div>
+                            <h2>Cartão</h2>
+                            <p>O entregador levará a maquineta.</p>
+                        </div>
+                    </div>
+                </button>
+
+                <button type="button" class="opcao-pagamento" id="abrirModalDinheiro">
+                    <div class="conteudo-opcao">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+
+                        <div>
+                            <h2>Dinheiro</h2>
+                            <p>Informe se precisa de troco.</p>
+                        </div>
+                    </div>
+                </button>
+
+            </div>
+
+        </section>
+    </main>
+
+    <!-- MODAL PIX -->
+    <div id="modalPix" class="modal">
+        <div class="modal-content modal-pedido">
+            <span class="fechar" id="fecharModalPix">&times;</span>
+
+            <h2>Pagamento via Pix</h2>
+
+            <div class="resumo-pedido">
+                <p><strong>Endereço:</strong> <span id="enderecoPix"></span></p>
+                <p><strong>Telefone para contato:</strong> (81) 98150-5904</p>
+
+                <h3>Itens do pedido</h3>
+                <ul id="itensPix"></ul>
+
+                <p class="total-modal"><strong>Total:</strong> <span id="totalPix"></span></p>
+            </div>
+
+            <div class="info-pagamento">
+                <p><strong>Chave Pix:</strong></p>
+                <p class="chave-pix">cantinhodamarcia@pix.com</p>
+            </div>
+
+            <button class="botao-finalizar" id="confirmarPix">
+                Confirmar Pedido
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL CARTÃO -->
+    <div id="modalCartao" class="modal">
+        <div class="modal-content modal-pedido">
+            <span class="fechar" id="fecharModalCartao">&times;</span>
+
+            <h2>Pagamento no Cartão</h2>
+
+            <div class="resumo-pedido">
+                <p><strong>Endereço:</strong> <span id="enderecoCartao"></span></p>
+                <p><strong>Telefone para contato:</strong> (81) 98150-5904</p>
+
+                <h3>Itens do pedido</h3>
+                <ul id="itensCartao"></ul>
+
+                <p class="total-modal"><strong>Total dos produtos:</strong> <span id="totalCartao"></span></p>
+                <p><strong>Taxa da maquineta:</strong> R$ 1,00</p>
+                <p class="total-modal"><strong>Total final:</strong> <span id="totalCartaoFinal"></span></p>
+            </div>
+
+            <div class="info-pagamento">
+                <p>O entregador levará a maquineta até você.</p>
+            </div>
+
+            <button class="botao-finalizar" id="confirmarCartao">
+                Confirmar Pedido
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DINHEIRO -->
+    <div id="modalDinheiro" class="modal">
+        <div class="modal-content modal-pedido">
+            <span class="fechar" id="fecharModalDinheiro">&times;</span>
+
+            <h2>Pagamento em Dinheiro</h2>
+
+            <div class="resumo-pedido">
+                <p><strong>Endereço:</strong> <span id="enderecoDinheiro"></span></p>
+                <p><strong>Telefone para contato:</strong> (81) 98150-5904</p>
+
+                <h3>Itens do pedido</h3>
+                <ul id="itensDinheiro"></ul>
+
+                <p class="total-modal"><strong>Total:</strong> <span id="totalDinheiro"></span></p>
+            </div>
+
+            <div class="troco-area">
+                <p><strong>Precisa de troco?</strong></p>
+
+                <div class="botoes-troco">
+                    <button type="button" id="trocoSim">Sim</button>
+                    <button type="button" id="trocoNao">Não</button>
+                </div>
+
+                <div id="campoTroco" class="campo-troco">
+                    <label for="valorPago">Vai pagar com quanto?</label>
+                    <input type="number" id="valorPago" placeholder="Ex: 50">
+
+                    <p id="resultadoTroco"></p>
+                </div>
+            </div>
+
+            <button class="botao-finalizar" id="confirmarDinheiro">
+                Confirmar Pedido
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+
+</body>
+
+</html>
